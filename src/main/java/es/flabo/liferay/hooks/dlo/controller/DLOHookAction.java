@@ -114,37 +114,37 @@ public class DLOHookAction extends BaseStrutsPortletAction {
 				if (originalImage==null){
 					result=ERROR_JSP;
 				}else{
-					DLOEntry entry=new DLOEntry(originalImage);
-					boolean processResult = DLOUtil.processImage(entry);
-					LOGGER.debug(entry);
-					
-					if (!processResult || entry==null || entry.getOptimizedEntry()==null){
-						result=ERROR_JSP;
-					}else{
-						renderRequest.setAttribute(PARAM_OPTIMIZATION_TYPE, entry.getOptimizationType().getValue());
-						
-						renderRequest.setAttribute(PARAM_SIZE_ORIGINAL, entry.getOriginalSize());
-						renderRequest.setAttribute(PARAM_SIZE_OPTIMIZED, entry.getOptimizedSize());
-						
-						renderRequest.setAttribute(PARAM_MIME_TYPE_ORIGINAL, entry.getOriginalType().getValue());
-						renderRequest.setAttribute(PARAM_MIME_TYPE_OPTIMIZED, entry.getOptimizedType().getValue());
-						
-						renderRequest.setAttribute(PARAM_REDIRECT, redirect);
-						renderRequest.setAttribute(PARAM_FILE_ENTRY_ID, fileEntryId);
-						
-						renderRequest.setAttribute(PARAM_IMAGE_ORIGINAL_URL, entry.getOriginalEntryURL(themeDisplay));
-						renderRequest.setAttribute(PARAM_IMAGE_OPTIMIZED_BASE64, entry.getOptimizedEntryBase64());
-						
-						renderRequest.setAttribute(PARAM_OPTIMIZED_PATH, entry.getOptimizedEntry().getAbsolutePath());
-						renderRequest.setAttribute(PARAM_VARIATION, entry.getVariation());
-			
-						boolean showVariationInfo = false;
-						if (entry.getVariation() >= DLOUtil.VARIATION_LIMIT_ADVERTISEMENT) {
-							showVariationInfo = true;
-						}
-						renderRequest.setAttribute(PARAM_SHOW_VARIATION_INFO, showVariationInfo);		
-						result=VIEW_JSP;
-					}
+//					DLOEntry entry=new DLOEntry(originalImage);
+//					boolean processResult = DLOUtil.processImage(entry);
+//					LOGGER.debug(entry);
+//					
+//					if (!processResult || entry==null || entry.getOptimizedEntry()==null){
+//						result=ERROR_JSP;
+//					}else{
+//						renderRequest.setAttribute(PARAM_OPTIMIZATION_TYPE, entry.getOptimizationType().getValue());
+//						
+//						renderRequest.setAttribute(PARAM_SIZE_ORIGINAL, entry.getOriginalSize());
+//						renderRequest.setAttribute(PARAM_SIZE_OPTIMIZED, entry.getOptimizedSize());
+//						
+//						renderRequest.setAttribute(PARAM_MIME_TYPE_ORIGINAL, entry.getOriginalType().getValue());
+//						renderRequest.setAttribute(PARAM_MIME_TYPE_OPTIMIZED, entry.getOptimizedType().getValue());
+//						
+//						renderRequest.setAttribute(PARAM_REDIRECT, redirect);
+//						renderRequest.setAttribute(PARAM_FILE_ENTRY_ID, fileEntryId);
+//						
+//						renderRequest.setAttribute(PARAM_IMAGE_ORIGINAL_URL, entry.getOriginalEntryURL(themeDisplay));
+//						renderRequest.setAttribute(PARAM_IMAGE_OPTIMIZED_BASE64, entry.getOptimizedEntryBase64());
+//						
+//						renderRequest.setAttribute(PARAM_OPTIMIZED_PATH, entry.getOptimizedEntry().getAbsolutePath());
+//						renderRequest.setAttribute(PARAM_VARIATION, entry.getVariation());
+//			
+//						boolean showVariationInfo = false;
+//						if (entry.getVariation() >= DLOUtil.VARIATION_LIMIT_ADVERTISEMENT) {
+//							showVariationInfo = true;
+//						}
+//						renderRequest.setAttribute(PARAM_SHOW_VARIATION_INFO, showVariationInfo);		
+//						result=VIEW_JSP;
+//					}
 				}
 			}
 		}catch (OutOfMemoryError error){

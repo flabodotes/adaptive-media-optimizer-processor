@@ -57,7 +57,7 @@ public class DLOUtil {
 	public final static float MINIMUN_QUALITY = 0.01f;
 	public final static float STEP_QUALITY = 0.02f;
 	public final static float STEP_VARIATION = 0.01f;
-	public final static int VARIATION_LIMIT = 12;
+	public final static int VARIATION_LIMIT = 12000;
 	public final static int VARIATION_LIMIT_ADVERTISEMENT = 20;
 
 	/**
@@ -133,18 +133,18 @@ public class DLOUtil {
 	 * @param imagen
 	 * @return true or false
 	 */
-	public static boolean processImage(DLOEntry imagen) {		
+	public static DLOEntry processImage(DLOEntry imagen) {		
 		if (imagen.getOriginalType()==EntryType.JPG) {
 			imagen.setOptimizedType(EntryType.JPG);
 			return DLOUtil.processJPG(imagen);
 		} else if (imagen.getOriginalType()==EntryType.PNG) {
 			imagen.setOptimizedType(EntryType.PNG);
-			return DLOUtil.processPNG(imagen)==null?false:true;
+			return DLOUtil.processPNG(imagen);
 		} else if (imagen.getOriginalType()==EntryType.GIF) {
 			imagen.setOptimizedType(EntryType.GIF);
-			return DLOUtil.processGIF(imagen)==null?false:true;
+			return DLOUtil.processGIF(imagen);
 		} else {
-			return false;
+			return null;
 		}
 	}
 
@@ -243,7 +243,7 @@ public class DLOUtil {
 		LOGGER.debug("Processing PNG with JAVA");
 		
 		try {
-			InputStream stream = imagen.getOriginalEntry().getContentStream();
+			InputStream stream = imagen.getOriginalEntryStream();
 			File compressedImageFile = new File(getTempPath()+ imagen.getOriginalName() + ".png");
 			OutputStream os = new FileOutputStream(compressedImageFile);
 			BufferedImage image = ImageIO.read(stream);
@@ -325,7 +325,7 @@ public class DLOUtil {
 		
 		try {			
 			String fileEntryName = imagen.getOriginalName() + ".png";
-			PngImage image = new PngImage(imagen.getOriginalEntry().getContentStream(), fileEntryName);
+			PngImage image = new PngImage(imagen.getOriginalEntryStream(), fileEntryName);
 			String outputFile = getTempPath() + fileEntryName;			
 
 			boolean removeGamma = false;
@@ -358,7 +358,7 @@ public class DLOUtil {
 			String fileEntryName = imagen.getOriginalName() + ".png";
 			String outputFile = getTempPath() + fileEntryName;
 
-			OptimizeGif.optimizeGif(imagen.getOriginalEntry().getContentStream(), blockSize, dictClear, new File(outputFile));
+			OptimizeGif.optimizeGif(imagen.getOriginalEntryStream(), blockSize, dictClear, new File(outputFile));
 
 			imagen.setOptimizedEntry(new File(outputFile));
 			imagen.setVariation(0);
@@ -389,14 +389,10 @@ public class DLOUtil {
 	 * @param imagen
 	 * @return 
 	 */
-	public static boolean processJPG(DLOEntry imagen) {
+	public static DLOEntry processJPG(DLOEntry imagen) {
 		DLOEntry processedForSize = DLOUtil.processJPG(imagen, false, true, DLOUtil.DEFAULT_QUALITY);
 		DLOEntry processedForQuality = DLOUtil.processJPG(processedForSize, true, false, processedForSize.getQualityFactorUsed());
-		if (processedForQuality==null){
-			return false;
-		}else{
-			return true;
-		}
+		return processedForQuality;
 	}
 
 	/**
@@ -420,7 +416,7 @@ public class DLOUtil {
 		checkResourcesUsed();
 
 		try {
-			InputStream stream = entry.getOriginalEntry().getContentStream();
+			InputStream stream = entry.getOriginalEntryStream();			
 			File compressedImageFile = new File(getTempPath()+entry.getOriginalName() + ".jpg");
 
 			OutputStream os = new FileOutputStream(compressedImageFile);
@@ -432,7 +428,7 @@ public class DLOUtil {
 			Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpg");
 
 			if (!writers.hasNext()) {
-				stream.close();
+				//stream.close();
 				os.close();
 				throw new IllegalStateException("No writers found for jpg");
 			}
@@ -457,7 +453,7 @@ public class DLOUtil {
 			writer.write(null, new IIOImage(image, null, null), param);
 
 			// close all streams
-			stream.close();
+			//stream.close();
 			os.flush();
 			os.close();
 			ios.flush();
@@ -476,7 +472,8 @@ public class DLOUtil {
 			ios=null;
 			os=null;
 			compressedImageFile = null;
-			stream=null;
+			//stream=null;
+			stream.reset();
 			
 			// Busqueda de una mejora en espacio reduciendo calidad
 			if (entry.getOptimizedEntry().length() >= entry.getOriginalSize() && findQuality
@@ -500,11 +497,9 @@ public class DLOUtil {
 					DLOUtil.processJPG(entry, true, false, newQuality);
 				}
 			}
-
-		} catch (NoSuchFileException noFile) {
-			LOGGER.error("El documento al que hace referencia no se ha encontrado (no esta en data).");
 		} catch (Exception e) {
 			LOGGER.error(e);
+			e.printStackTrace();
 		}
 				
 		return entry;

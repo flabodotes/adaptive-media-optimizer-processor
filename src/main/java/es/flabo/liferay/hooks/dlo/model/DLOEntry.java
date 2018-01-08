@@ -1,6 +1,8 @@
 package es.flabo.liferay.hooks.dlo.model;
 
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Base64;
 
@@ -9,13 +11,15 @@ import es.flabo.liferay.hooks.dlo.utils.DLOUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
 
 public class DLOEntry {
 	
 	String originalName=null;
-	DLFileEntry originalEntry=null;
+	FileEntry originalEntry=null;
+	InputStream originalEntryStream=null;
 	File optimizedEntry=null;	
 	EntryType originalType = null;
 	EntryType optimizedType = null;
@@ -29,13 +33,36 @@ public class DLOEntry {
 	public static final String MIME_PNG = "image/png";
 	public static final String MIME_JPEG = "image/jpeg";	
 	
-	public DLOEntry() {
-		super();
-	}
+//	public DLOEntry() {
+//		super();
+//	}
 
-	public DLOEntry(DLFileEntry originalEntry) {
+	public DLOEntry(InputStream stream, String mime,long size,String name) {
 		super();
-		this.originalEntry = originalEntry;
+		this.originalEntry=null;
+		this.originalEntryStream = stream;
+		
+		if (mime.contains(MIME_JPEG)) {			
+			this.originalType=EntryType.JPG;
+			this.optimizationType=OptimizationType.LOOSY;
+		} else if (mime.contains(MIME_PNG)) {
+			this.originalType=EntryType.PNG;
+			this.optimizationType=OptimizationType.LOSSLESS;
+		} else if (mime.contains(MIME_GIF)) {
+			this.originalType=EntryType.GIF;
+			this.optimizationType=OptimizationType.LOSSLESS;
+		} else {
+			this.originalType=EntryType.UNKNOW;
+		}		
+		
+		this.originalSize=size;
+		this.originalName=DLOUtil.normalize(name);		
+	}
+	
+	public DLOEntry(FileEntry originalEntry) throws PortalException {
+		super();
+		this.originalEntry =  originalEntry;
+		this.originalEntryStream = originalEntry.getContentStream();
 		
 		if (originalEntry.getMimeType().contains(MIME_JPEG)) {			
 			this.originalType=EntryType.JPG;
@@ -52,17 +79,17 @@ public class DLOEntry {
 		
 		this.originalSize=originalEntry.getSize();
 		this.originalName=DLOUtil.normalize(originalEntry.getTitle());
-	}
-
-	public DLFileEntry getOriginalEntry() {
-		return originalEntry;
-	}
+	}	
+	
+//	public FileEntry getOriginalEntry() {
+//		return originalEntry;
+//	}
 	
 	public String getOriginalEntryURL(ThemeDisplay themeDisplay){
 		return DLOUtil.getImageURL(this.originalEntry.getFileEntryId(), themeDisplay);		
 	}
 
-	public void setOriginalEntry(DLFileEntry originalEntry) {
+	public void setOriginalEntry(FileEntry originalEntry) {
 		this.originalEntry = originalEntry;
 	}
 
@@ -149,6 +176,14 @@ public class DLOEntry {
 
 	public void setOriginalName(String originalName) {
 		this.originalName = originalName;
+	}
+	
+	public InputStream getOriginalEntryStream() {
+		return originalEntryStream;
+	}
+
+	public void setOriginalEntryStream(InputStream originalEntryStream) {
+		this.originalEntryStream = originalEntryStream;
 	}
 
 	@Override
