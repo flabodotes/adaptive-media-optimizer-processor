@@ -1,0 +1,1 @@
+# adaptive-media-optimizer-processor
